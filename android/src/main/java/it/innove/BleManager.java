@@ -13,11 +13,29 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import com.facebook.react.bridge.*;
+
+import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import it.innove.NotificationService.NotificationServiceCallbacks;
+import it.innove.NotificationService.NotificationWrapper;
 
 import static android.app.Activity.RESULT_OK;
 import static android.bluetooth.BluetoothProfile.GATT;
@@ -149,7 +167,7 @@ class BleManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void scan(ReadableArray serviceUUIDs, final int scanSeconds, boolean allowDuplicates, ReadableMap options, Callback callback) {
+	public void scan(ReadableArray serviceUUIDs, final int scanSeconds, boolean allowDuplicates, ReadableMap options, final Callback callback) {
 		Log.d(LOG_TAG, "scan");
 		if (getBluetoothAdapter() == null) {
 			Log.d(LOG_TAG, "No bluetooth support");
@@ -166,11 +184,30 @@ class BleManager extends ReactContextBaseJavaModule implements ActivityEventList
 			}
 		}
 
-		scanManager.scan(serviceUUIDs, scanSeconds, options, callback);
+        scanManager.scan(serviceUUIDs, scanSeconds, options, new Callback()
+        {
+            @Override
+            public void invoke(Object... args)
+            {
+                ReactApplicationContext reactApplicationContext = getReactApplicationContext();
+                Context applicationContext = reactApplicationContext.getApplicationContext();
+                if (applicationContext instanceof NotificationServiceCallbacks)
+                {
+                    NotificationServiceCallbacks notificationServiceCallbacks = (NotificationServiceCallbacks) applicationContext;
+                    NotificationWrapper notificationWrapper = notificationServiceCallbacks.getNotificationWrapper();
+                    if (notificationWrapper != null)
+                    {
+                        NotificationService.showNotification(applicationContext, notificationWrapper);
+                    }
+                }
+
+                callback.invoke();
+            }
+        });
 	}
 
 	@ReactMethod
-	public void stopScan(Callback callback) {
+	public void stopScan(final Callback callback) {
 		Log.d(LOG_TAG, "Stop scan");
 		if (getBluetoothAdapter() == null) {
 			Log.d(LOG_TAG, "No bluetooth support");
@@ -181,7 +218,21 @@ class BleManager extends ReactContextBaseJavaModule implements ActivityEventList
 			callback.invoke("Bluetooth not enabled");
 			return;
 		}
-		scanManager.stopScan(callback);
+		scanManager.stopScan(new Callback()
+        {
+            @Override
+            public void invoke(Object... args)
+            {
+                ReactApplicationContext reactApplicationContext = getReactApplicationContext();
+                Context applicationContext = reactApplicationContext.getApplicationContext();
+                if (applicationContext instanceof NotificationServiceCallbacks)
+                {
+                    NotificationService.stopNotification(applicationContext);
+                }
+
+                callback.invoke();
+            }
+        });
 	}
 
 	@ReactMethod

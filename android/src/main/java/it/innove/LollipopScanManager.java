@@ -8,11 +8,15 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
-import com.facebook.react.bridge.*;
-import org.json.JSONException;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,9 +102,9 @@ public class LollipopScanManager extends ScanManager {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + result.getDevice().getName());
+					//Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + result.getDevice().getName());
 					String address = result.getDevice().getAddress();
-                    Peripheral peripheral = null;
+                    Peripheral peripheral;
 
 					if (!bleManager.peripherals.containsKey(address)) {
 						peripheral = new Peripheral(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes(), reactContext);

@@ -147,9 +147,11 @@ export default class App extends Component {
   handleDiscoverPeripheral(peripheral){
     var peripherals = this.state.peripherals;
     if (!peripherals.has(peripheral.id)){
-      console.log('Got ble peripheral', peripheral);
+      console.log('Add BLE peripheral', peripheral.name, peripheral.rssi);
       peripherals.set(peripheral.id, peripheral);
       this.setState({ peripherals })
+    } else {
+      console.log('Scan BLE peripheral', peripheral.name, peripheral.rssi);
     }
   }
 
@@ -226,7 +228,7 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.navBar}>
-          <View style={{flex:1, alignItems:'flex-end'}}><Text style={{fontSize:18}}>Scanning</Text></View>
+          <View style={{flex:1, alignItems:'flex-end'}}><Text style={{fontSize:18}}>Scan</Text></View>
           <View>
             <Switch
               onValueChange={(value) => { this.startScan(value) }}
