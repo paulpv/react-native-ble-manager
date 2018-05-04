@@ -14,8 +14,6 @@ static BleManager * _instance = nil;
 
 RCT_EXPORT_MODULE();
 
-@synthesize bridge = _bridge;
-
 @synthesize manager;
 @synthesize peripherals;
 @synthesize scanTimer;
@@ -37,6 +35,8 @@ bool hasListeners;
         stopNotificationCallbacks = [NSMutableDictionary new];
         _instance = self;
         NSLog(@"BleManager created");
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(bridgeReloading) name:RCTBridgeWillReloadNotification object:nil];
     }
     
     return self;
@@ -48,6 +48,24 @@ bool hasListeners;
 
 -(void)stopObserving {
     hasListeners = NO;
+}
+
+-(void)bridgeReloading {
+    if (manager) {
+        if (self.scanTimer) {
+            [self.scanTimer invalidate];
+            self.scanTimer = nil;
+            [manager stopScan];
+        }
+        
+        manager.delegate = nil;
+    }
+    
+    for (CBPeripheral* p in peripherals) {
+        p.delegate = nil;
+    }
+    
+    peripherals = [NSMutableSet set];
 }
 
 +(BOOL)requiresMainQueueSetup
@@ -80,8 +98,7 @@ bool hasListeners;
         [readCallbacks removeObjectForKey:key];
     } else {
         if (hasListeners) {
-
-            [self sendEventWithName:@"BleManagerDidUpdateValueForCharacteristic" body:@{@"peripheral": peripheral.uuidAsString, @"characteristic":characteristic.UUID.UUIDString, @"service":characteristic.service.UUID.UUIDString, @"value": [characteristic.value toArray]}];
+            [self sendEventWithName:@"BleManagerDidUpdateValueForCharacteristic" body:@{@"peripheral": peripheral.uuidAsString, @"characteristic":characteristic.UUID.UUIDString, @"service":characteristic.service.UUID.UUIDString, @"value": ([characteristic.value length] > 0) ? [characteristic.value toArray] : [NSNull null]}];
         }
     }
 }
@@ -318,7 +335,9 @@ RCT_EXPORT_METHOD(stopScan:(nonnull RCTResponseSenderBlock)callback)
     self.scanTimer = nil;
     [manager stopScan];
     if (hasListeners) {
-        [self sendEventWithName:@"BleManagerStopScan" body:@{}];
+        if (self.bridge) {
+            [self sendEventWithName:@"BleManagerStopScan" body:@{}];
+        }
     }
 }
 
