@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -65,6 +66,21 @@ class BleManager extends ReactContextBaseJavaModule implements ActivityEventList
 	public String getName() {
 		return "BleManager";
 	}
+
+    @Override
+    public Map<String, Object> getConstants() {
+        final Map<String, Object> constants = new HashMap<>();
+        constants.put("MATCH_NUM_ONE_ADVERTISEMENT", ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT);
+        constants.put("MATCH_NUM_FEW_ADVERTISEMENT", ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT);
+        constants.put("MATCH_NUM_MAX_ADVERTISEMENT", ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT);
+        constants.put("MATCH_MODE_AGGRESSIVE", ScanSettings.MATCH_MODE_AGGRESSIVE);
+        constants.put("MATCH_MODE_STICKY", ScanSettings.MATCH_MODE_STICKY);
+        constants.put("SCAN_MODE_BALANCED", ScanSettings.SCAN_MODE_BALANCED);
+        constants.put("SCAN_MODE_LOW_LATENCY", ScanSettings.SCAN_MODE_LOW_LATENCY);
+        constants.put("SCAN_MODE_LOW_POWER", ScanSettings.SCAN_MODE_LOW_POWER);
+        constants.put("SCAN_MODE_OPPORTUNISTIC", ScanSettings.SCAN_MODE_OPPORTUNISTIC);
+        return constants;
+    }
 
 	private BluetoothAdapter getBluetoothAdapter() {
 		if (bluetoothAdapter == null) {

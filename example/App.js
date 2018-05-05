@@ -110,24 +110,31 @@ export default class App extends Component {
   startScan() {
     if (!this.state.scanning) {
       this.setState({peripherals: new Map()});
-      BleManager.scan([], 3, true).then((results) => {
-        console.log('Scanning...');
-        this.setState({scanning:true});
-      });
+      let scanningOptions = {
+        numberOfMatches: BleManager.MATCH_NUM_ONE_ADVERTISEMENT,
+        matchMode: BleManager.MATCH_MODE_AGGRESSIVE,
+        scanMode: BleManager.SCAN_MODE_LOW_LATENCY,
+      };
+      BleManager.scan([], 3, true, scanningOptions)
+        .then((results) => {
+          console.log('Scanning...');
+          this.setState({scanning:true});
+        });
     }
   }
 
   retrieveConnected(){
-    BleManager.getConnectedPeripherals([]).then((results) => {
-      console.log(results);
-      var peripherals = this.state.peripherals;
-      for (var i = 0; i < results.length; i++) {
-        var peripheral = results[i];
-        peripheral.connected = true;
-        peripherals.set(peripheral.id, peripheral);
-        this.setState({ peripherals });
-      }
-    });
+    BleManager.getConnectedPeripherals([])
+      .then((results) => {
+        console.log(results);
+        var peripherals = this.state.peripherals;
+        for (var i = 0; i < results.length; i++) {
+          var peripheral = results[i];
+          peripheral.connected = true;
+          peripherals.set(peripheral.id, peripheral);
+          this.setState({ peripherals });
+        }
+      });
   }
 
   handleDiscoverPeripheral(peripheral){

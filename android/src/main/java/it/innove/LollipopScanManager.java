@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
@@ -98,17 +99,23 @@ public class LollipopScanManager extends ScanManager {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
+					BluetoothDevice device = result.getDevice();
 					Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + result.getDevice().getName());
-					String address = result.getDevice().getAddress();
-                    Peripheral peripheral = null;
+					String address = device.getAddress();
+					Peripheral peripheral;
+
+					int rssi = result.getRssi();
+					ScanRecord scanRecord = result.getScanRecord();
+					byte[] scanRecordBytes = scanRecord != null ? scanRecord.getBytes() : new byte[0];
 
 					if (!bleManager.peripherals.containsKey(address)) {
-						peripheral = new Peripheral(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes(), reactContext);
+						// Is reactContext guaranteed to always be valid?
+						peripheral = new Peripheral(device, rssi, scanRecordBytes, reactContext);
 						bleManager.peripherals.put(address, peripheral);
 					} else {
 						peripheral = bleManager.peripherals.get(address);
-						peripheral.updateRssi(result.getRssi());
-						peripheral.updateData(result.getScanRecord().getBytes());
+						peripheral.updateRssi(rssi);
+						peripheral.updateData(scanRecordBytes);
 					}
 
 					WritableMap map = peripheral.asWritableMap();

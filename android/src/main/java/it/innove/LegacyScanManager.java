@@ -38,7 +38,7 @@ public class LegacyScanManager extends ScanManager {
 
 							if (!bleManager.peripherals.containsKey(address)) {
 								peripheral = new Peripheral(device, rssi, scanRecord, reactContext);
-								bleManager.peripherals.put(device.getAddress(), peripheral);
+								bleManager.peripherals.put(address, peripheral);
 							} else {
 								peripheral = bleManager.peripherals.get(address);
 								peripheral.updateRssi(rssi);

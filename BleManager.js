@@ -6,6 +6,15 @@ class BleManager  {
 
   constructor() {
     this.isPeripheralConnected = this.isPeripheralConnected.bind(this);
+    this.MATCH_NUM_ONE_ADVERTISEMENT = bleManager.MATCH_NUM_ONE_ADVERTISEMENT;
+    this.MATCH_NUM_FEW_ADVERTISEMENT = bleManager.MATCH_NUM_FEW_ADVERTISEMENT;
+    this.MATCH_NUM_MAX_ADVERTISEMENT = bleManager.MATCH_NUM_MAX_ADVERTISEMENT;
+    this.MATCH_MODE_AGGRESSIVE = bleManager.MATCH_MODE_AGGRESSIVE;
+    this.MATCH_MODE_STICKY = bleManager.MATCH_MODE_STICKY;
+    this.SCAN_MODE_BALANCED = bleManager.SCAN_MODE_BALANCED;
+    this.SCAN_MODE_LOW_LATENCY = bleManager.SCAN_MODE_LOW_LATENCY;
+    this.SCAN_MODE_LOW_POWER = bleManager.SCAN_MODE_LOW_POWER;
+    this.SCAN_MODE_OPPORTUNISTIC = bleManager.SCAN_MODE_OPPORTUNISTIC;
   }
 
   read(peripheralId, serviceUUID, characteristicUUID) {
@@ -177,17 +186,17 @@ class BleManager  {
       // (ANDROID) Match as many advertisement per filter as hw could allow
       // dependes on current capability and availability of the resources in hw.
       if (scanningOptions.numberOfMatches == null) {
-        scanningOptions.numberOfMatches = 3;
+        scanningOptions.numberOfMatches = MATCH_NUM_MAX_ADVERTISEMENT;
       }
 
       // (ANDROID) Defaults to MATCH_MODE_AGGRESSIVE
       if (scanningOptions.matchMode == null) {
-        scanningOptions.matchMode = 1;
+        scanningOptions.matchMode = MATCH_MODE_AGGRESSIVE;
       }
 
       // (ANDROID) Defaults to SCAN_MODE_LOW_POWER on android
       if (scanningOptions.scanMode == null) {
-        scanningOptions.scanMode = 0;
+        scanningOptions.scanMode = SCAN_MODE_LOW_POWER;
       }
 
       bleManager.scan(serviceUUIDs, seconds, allowDuplicates, scanningOptions, (error) => {
