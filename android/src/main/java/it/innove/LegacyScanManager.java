@@ -9,7 +9,9 @@ import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 
 public class LegacyScanManager extends ScanManager {
 
-	public LegacyScanManager(ReactApplicationContext reactContext, BleManager bleManager) {
+    private static final String LOG_TAG = "LegacyScanManager";
+
+	LegacyScanManager(ReactApplicationContext reactContext, BleManager bleManager) {
 		super(reactContext, bleManager);
 	}
 
@@ -28,21 +30,21 @@ public class LegacyScanManager extends ScanManager {
 
 				@Override
 				public void onLeScan(final BluetoothDevice device, final int rssi,
-									 final byte[] scanRecord) {
+									 final byte[] scanRecordBytes) {
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + device.getName());
+							//Log.i(LOG_TAG, "DiscoverPeripheral: " + device.getName());
 							String address = device.getAddress();
 							Peripheral peripheral;
 
 							if (!bleManager.peripherals.containsKey(address)) {
-								peripheral = new Peripheral(device, rssi, scanRecord, reactContext);
+								peripheral = new Peripheral(device, rssi, scanRecordBytes, reactContext);
 								bleManager.peripherals.put(address, peripheral);
 							} else {
 								peripheral = bleManager.peripherals.get(address);
 								peripheral.updateRssi(rssi);
-								peripheral.updateData(scanRecord);
+								peripheral.updateData(scanRecordBytes);
 							}
 
 							WritableMap map = peripheral.asWritableMap();
@@ -57,7 +59,7 @@ public class LegacyScanManager extends ScanManager {
 	@Override
 	public void scan(ReadableArray serviceUUIDs, final int scanSeconds, ReadableMap options, Callback callback) {
 		if (serviceUUIDs.size() > 0) {
-			Log.d(bleManager.LOG_TAG, "Filter is not working in pre-lollipop devices");
+			Log.d(LOG_TAG, "Filter is not working in pre-lollipop devices");
 		}
 		getBluetoothAdapter().startLeScan(mLeScanCallback);
 

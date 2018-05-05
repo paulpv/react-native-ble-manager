@@ -3,6 +3,7 @@ package it.innove;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
@@ -23,7 +24,9 @@ import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class LollipopScanManager extends ScanManager {
 
-	public LollipopScanManager(ReactApplicationContext reactContext, BleManager bleManager) {
+    private static final String LOG_TAG = "LollipopScanManager";
+
+    public LollipopScanManager(ReactApplicationContext reactContext, BleManager bleManager) {
 		super(reactContext, bleManager);
 	}
 
@@ -40,7 +43,7 @@ public class LollipopScanManager extends ScanManager {
     public void scan(ReadableArray serviceUUIDs, final int scanSeconds, ReadableMap options,  Callback callback) {
         ScanSettings.Builder scanSettingsBuilder = new ScanSettings.Builder();
         List<ScanFilter> filters = new ArrayList<>();
-        
+
         scanSettingsBuilder.setScanMode(options.getInt("scanMode"));
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -52,11 +55,12 @@ public class LollipopScanManager extends ScanManager {
             for(int i = 0; i < serviceUUIDs.size(); i++){
 				ScanFilter filter = new ScanFilter.Builder().setServiceUuid(new ParcelUuid(UUIDHelper.uuidFromString(serviceUUIDs.getString(i)))).build();
                 filters.add(filter);
-                Log.d(bleManager.LOG_TAG, "Filter service: " + serviceUUIDs.getString(i));
+                Log.d(LOG_TAG, "Filter service: " + serviceUUIDs.getString(i));
             }
         }
         
         getBluetoothAdapter().getBluetoothLeScanner().startScan(filters, scanSettingsBuilder.build(), mScanCallback);
+
         if (scanSeconds > 0) {
             Thread thread = new Thread() {
                 private int currentScanSession = scanSessionId.incrementAndGet();
@@ -83,12 +87,11 @@ public class LollipopScanManager extends ScanManager {
                             }
                         }
                     });
-                    
                 }
-                
             };
             thread.start();
         }
+
         callback.invoke();
     }
 
@@ -100,7 +103,7 @@ public class LollipopScanManager extends ScanManager {
 				@Override
 				public void run() {
 					BluetoothDevice device = result.getDevice();
-					Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + result.getDevice().getName());
+					//Log.i(LOG_TAG, "DiscoverPeripheral: " + device.getName());
 					String address = device.getAddress();
 					Peripheral peripheral;
 

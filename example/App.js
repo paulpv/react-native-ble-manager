@@ -45,29 +45,28 @@ export default class App extends Component {
 
     BleManager.start({showAlert: false});
 
-    this.handlerDiscover = bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral );
-    this.handlerStop = bleManagerEmitter.addListener('BleManagerStopScan', this.handleStopScan );
-    this.handlerDisconnect = bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral );
-    this.handlerUpdate = bleManagerEmitter.addListener('BleManagerDidUpdateValueForCharacteristic', this.handleUpdateValueForCharacteristic );
-
-
+    this.handlerDiscover = bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
+    this.handlerStop = bleManagerEmitter.addListener('BleManagerStopScan', this.handleStopScan);
+    this.handlerDisconnect = bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral);
+    this.handlerUpdate = bleManagerEmitter.addListener('BleManagerDidUpdateValueForCharacteristic', this.handleUpdateValueForCharacteristic);
 
     if (Platform.OS === 'android' && Platform.Version >= 23) {
-        PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((result) => {
-            if (result) {
-              console.log("Permission is OK");
-            } else {
-              PermissionsAndroid.requestPermission(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((result) => {
+      PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION)
+        .then((result) => {
+          if (result) {
+            console.log("Permission is OK");
+          } else {
+            PermissionsAndroid.requestPermission(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION)
+              .then((result) => {
                 if (result) {
                   console.log("User accept");
                 } else {
                   console.log("User refuse");
                 }
               });
-            }
-      });
+          }
+        });
     }
-
   }
 
   handleAppStateChange(nextAppState) {
