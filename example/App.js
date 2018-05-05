@@ -12,6 +12,7 @@ import {
   PermissionsAndroid,
   ListView,
   ScrollView,
+  Switch,
   AppState,
   Dimensions,
 } from 'react-native';
@@ -106,18 +107,25 @@ export default class App extends Component {
     this.setState({ scanning: false });
   }
 
-  startScan() {
-    if (!this.state.scanning) {
+  startScan(on) {
+    this.setState({scanning:on});
+    if (on) {
       this.setState({peripherals: new Map()});
       let scanningOptions = {
         numberOfMatches: BleManager.MATCH_NUM_ONE_ADVERTISEMENT,
         matchMode: BleManager.MATCH_MODE_AGGRESSIVE,
         scanMode: BleManager.SCAN_MODE_LOW_LATENCY,
       };
-      BleManager.scan([], 3, true, scanningOptions)
+      BleManager.scan([], 0, true, scanningOptions)
         .then((results) => {
           console.log('Scanning...');
           this.setState({scanning:true});
+        });
+    } else {
+      BleManager.stopScan()
+        .then((results) => {
+          console.log('Scanning Stopped');
+          this.setState({scanning:false});
         });
     }
   }
@@ -221,34 +229,42 @@ export default class App extends Component {
 
     return (
       <View style={styles.container}>
-        <TouchableHighlight style={{marginTop: 40,margin: 20, padding:20, backgroundColor:'#ccc'}} onPress={() => this.startScan() }>
-          <Text>Scan Bluetooth ({this.state.scanning ? 'on' : 'off'})</Text>
-        </TouchableHighlight>
-        <TouchableHighlight style={{marginTop: 0,margin: 20, padding:20, backgroundColor:'#ccc'}} onPress={() => this.retrieveConnected() }>
-          <Text>Retrieve connected peripherals</Text>
-        </TouchableHighlight>
-        <ScrollView style={styles.scroll}>
-          {(list.length == 0) &&
-            <View style={{flex:1, margin: 20}}>
-              <Text style={{textAlign: 'center'}}>No peripherals</Text>
-            </View>
-          }
-          <ListView
-            enableEmptySections={true}
-            dataSource={dataSource}
-            renderRow={(item) => {
-              const color = item.connected ? 'green' : '#fff';
-              return (
-                <TouchableHighlight onPress={() => this.test(item) }>
-                  <View style={[styles.row, {backgroundColor: color}]}>
-                    <Text style={{fontSize: 12, textAlign: 'center', color: '#333333', padding: 10}}>{item.name}</Text>
-                    <Text style={{fontSize: 8, textAlign: 'center', color: '#333333', padding: 10}}>{item.id}</Text>
-                  </View>
-                </TouchableHighlight>
-              );
-            }}
-          />
-        </ScrollView>
+        <View style={styles.navBar}>
+          <View style={{flex:1, alignItems:'flex-end'}}><Text style={{fontSize:18}}>Scan</Text></View>
+          <View>
+            <Switch
+              onValueChange={(value) => { this.startScan(value) }}
+              value={ this.state.scanning }
+              />
+          </View>
+        </View>
+        <View style={styles.content}>
+          <TouchableHighlight style={{marginTop: 0, margin: 20, padding:20, backgroundColor:'#ccc'}} onPress={() => this.retrieveConnected() }>
+            <Text>Retrieve connected peripherals</Text>
+          </TouchableHighlight>
+          <ScrollView style={styles.scroll}>
+            {(list.length == 0) &&
+              <View style={{flex:1, margin: 20}}>
+                <Text style={{textAlign: 'center'}}>No peripherals</Text>
+              </View>
+            }
+            <ListView
+              enableEmptySections={true}
+              dataSource={dataSource}
+              renderRow={(item) => {
+                const color = item.connected ? 'green' : '#fff';
+                return (
+                  <TouchableHighlight onPress={() => this.test(item) }>
+                    <View style={[styles.row, {backgroundColor: color}]}>
+                      <Text style={{fontSize: 12, textAlign: 'center', color: '#333333', padding: 10}}>{item.name}</Text>
+                      <Text style={{fontSize: 8, textAlign: 'center', color: '#333333', padding: 10}}>{item.id}</Text>
+                    </View>
+                  </TouchableHighlight>
+                );
+              }}
+            />
+          </ScrollView>
+        </View>
       </View>
     );
   }
@@ -257,10 +273,20 @@ export default class App extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
     backgroundColor: '#FFF',
     width: window.width,
     height: window.height
   },
+  navBar: {
+    flexDirection: 'row',
+    padding: 16,
+    height: 60,
+    backgroundColor: '#1EAAF1',
+  },
+  content: {
+    flex: 1,
+  },  
   scroll: {
     flex: 1,
     backgroundColor: '#f0f0f0',

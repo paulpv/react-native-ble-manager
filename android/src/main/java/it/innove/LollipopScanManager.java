@@ -10,11 +10,15 @@ import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
-import com.facebook.react.bridge.*;
-import org.json.JSONException;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +102,6 @@ public class LollipopScanManager extends ScanManager {
 	private ScanCallback mScanCallback = new ScanCallback() {
 		@Override
 		public void onScanResult(final int callbackType, final ScanResult result) {
-
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -112,7 +115,6 @@ public class LollipopScanManager extends ScanManager {
 					byte[] scanRecordBytes = scanRecord != null ? scanRecord.getBytes() : new byte[0];
 
 					if (!bleManager.peripherals.containsKey(address)) {
-						// Is reactContext guaranteed to always be valid?
 						peripheral = new Peripheral(device, rssi, scanRecordBytes, reactContext);
 						bleManager.peripherals.put(address, peripheral);
 					} else {
