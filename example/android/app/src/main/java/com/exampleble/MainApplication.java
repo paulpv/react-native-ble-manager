@@ -40,7 +40,7 @@ public class MainApplication extends Application implements ReactApplication, No
 
     @Override
     protected String getJSMainModuleName() {
-      return "index";
+      return "index.android";
     }
   };
 
