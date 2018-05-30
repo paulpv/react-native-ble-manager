@@ -33,9 +33,14 @@ public class MainApplication extends Application implements ReactApplication, No
     @Override
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
-              new MainReactPackage(),
-              new BleManagerPackage()
+          new MainReactPackage(),
+          new BleManagerPackage()
       );
+    }
+
+    @Override
+    protected String getJSMainModuleName() {
+      return "index";
     }
   };
 
@@ -57,10 +62,8 @@ public class MainApplication extends Application implements ReactApplication, No
   private static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Notification used for ExampleBle background notifications";
   private static final int    NOTIFICATION_REQUEST_CODE        = 12345;
 
-  private void initNotificationChannel()
-  {
-      if (VERSION.SDK_INT < 26)
-      {
+  private void initNotificationChannel() {
+      if (VERSION.SDK_INT < 26) {
           return;
       }
 
@@ -71,8 +74,7 @@ public class MainApplication extends Application implements ReactApplication, No
               NOTIFICATION_CHANNEL_DESCRIPTION);
   }
 
-  public NotificationWrapper getNotificationWrapper()
-  {
+  public NotificationWrapper getNotificationWrapper() {
     int requestCode = NOTIFICATION_REQUEST_CODE;
 
     NotificationCompat.Builder builder = new NotificationCompat
