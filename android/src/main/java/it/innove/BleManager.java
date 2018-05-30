@@ -385,36 +385,6 @@ class BleManager extends ReactContextBaseJavaModule implements ActivityEventList
 			callback.invoke("Peripheral not found", null);
 	}
 
-	private BluetoothAdapter.LeScanCallback mLeScanCallback =
-			new BluetoothAdapter.LeScanCallback() {
-
-
-				@Override
-				public void onLeScan(final BluetoothDevice device, final int rssi,
-									 final byte[] scanRecord) {
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							Log.i(LOG_TAG, "DiscoverPeripheral: " + device.getName());
-							String address = device.getAddress();
-
-							if (!peripherals.containsKey(address)) {
-								Peripheral peripheral = new Peripheral(device, rssi, scanRecord, reactContext);
-								peripherals.put(device.getAddress(), peripheral);
-								WritableMap map = peripheral.asWritableMap();
-								sendEvent("BleManagerDiscoverPeripheral", map);
-							} else {
-								// this isn't necessary
-								Peripheral peripheral = peripherals.get(address);
-								peripheral.updateRssi(rssi);
-							}
-						}
-					});
-				}
-
-
-			};
-
 	@ReactMethod
 	public void checkState() {
 		Log.d(LOG_TAG, "checkState");

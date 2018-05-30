@@ -123,7 +123,7 @@ public class NotificationService
         try
         {
             Log.d(TAG,
-                    "+onStartCommand(intent=" + Utils.toString(intent) + ", flags=" + flags + ", startId="
+                    "+onStartCommand(intent=" + intent + ", flags=" + flags + ", startId="
                     + startId + ")");
             //Log.s(TAG, StringUtils.separateCamelCaseWords("onStartCommand"));
 
@@ -134,7 +134,7 @@ public class NotificationService
         finally
         {
             Log.d(TAG,
-                    "-onStartCommand(intent=" + Utils.toString(intent) + ", flags=" + flags + ", startId="
+                    "-onStartCommand(intent=" + intent + ", flags=" + flags + ", startId="
                     + startId + ")");
         }
     }
