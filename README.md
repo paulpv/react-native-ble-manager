@@ -253,7 +253,7 @@ __Examples__
 BleManager.enableBluetooth()
   .then(() => {
     // Success code
-    console.log('The bluetooh is already enabled or the user confirm');
+    console.log('The bluetooth is already enabled or the user confirm');
   })
   .catch((error) => {
     // Failure code
@@ -507,6 +507,23 @@ BleManager.createBond(peripheralId)
   })
 
 ```
+
+### removeBond(peripheralId) [Android only]
+Remove a paired device.
+Returns a `Promise` object.
+
+__Examples__
+```js
+BleManager.removeBond(peripheralId)
+  .then(() => {
+    console.log('removeBond success');
+  })
+  .catch(() => {
+    console.log('fail to remove the bond');
+  })
+
+```
+
 
 ### getBondedPeripherals() [Android only]
 Return the bonded peripherals.
