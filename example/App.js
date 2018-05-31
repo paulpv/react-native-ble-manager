@@ -62,7 +62,7 @@ export default class App extends Component {
                 if (result) {
                   console.log("User accept");
                 } else {
-                  console.log("User refuse");
+                  console.warn("User refuse");
                 }
               });
           }

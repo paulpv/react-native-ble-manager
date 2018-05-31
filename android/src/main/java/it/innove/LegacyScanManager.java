@@ -16,85 +16,22 @@ public class LegacyScanManager extends ScanManager {
 	}
 
 	@Override
-	public void stopScan(Callback callback) {
-		// update scanSessionId to prevent stopping next scan by running timeout thread
-		scanSessionId.incrementAndGet();
-
-		getBluetoothAdapter().stopLeScan(mLeScanCallback);
-		callback.invoke();
+	protected void stopScanInternal() {
+		getBluetoothAdapter().stopLeScan(mScanCallbackInternal);
 	}
 
-	private BluetoothAdapter.LeScanCallback mLeScanCallback =
-			new BluetoothAdapter.LeScanCallback() {
-
-
-				@Override
-				public void onLeScan(final BluetoothDevice device, final int rssi,
-									 final byte[] scanRecordBytes) {
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							//Log.i(LOG_TAG, "DiscoverPeripheral: " + device.getName());
-							String address = device.getAddress();
-							Peripheral peripheral;
-
-							if (!bleManager.peripherals.containsKey(address)) {
-								peripheral = new Peripheral(device, rssi, scanRecordBytes, reactContext);
-								bleManager.peripherals.put(address, peripheral);
-							} else {
-								peripheral = bleManager.peripherals.get(address);
-								peripheral.updateRssi(rssi);
-								peripheral.updateData(scanRecordBytes);
-							}
-
-							WritableMap map = peripheral.asWritableMap();
-							bleManager.sendEvent("BleManagerDiscoverPeripheral", map);
-						}
-					});
-				}
-
-
-			};
-
 	@Override
-	public void scan(ReadableArray serviceUUIDs, final int scanSeconds, ReadableMap options, Callback callback) {
+	protected void scanInternal(ReadableArray serviceUUIDs, ReadableMap options) {
 		if (serviceUUIDs.size() > 0) {
 			Log.d(LOG_TAG, "Filter is not working in pre-lollipop devices");
 		}
-		getBluetoothAdapter().startLeScan(mLeScanCallback);
-
-		if (scanSeconds > 0) {
-			Thread thread = new Thread() {
-				private int currentScanSession = scanSessionId.incrementAndGet();
-
-				@Override
-				public void run() {
-
-					try {
-						Thread.sleep(scanSeconds * 1000);
-					} catch (InterruptedException ignored) {
-					}
-
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							BluetoothAdapter btAdapter = getBluetoothAdapter();
-							// check current scan session was not stopped
-							if (scanSessionId.intValue() == currentScanSession) {
-								if (btAdapter.getState() == BluetoothAdapter.STATE_ON) {
-									btAdapter.stopLeScan(mLeScanCallback);
-								}
-								WritableMap map = Arguments.createMap();
-								bleManager.sendEvent("BleManagerStopScan", map);
-							}
-						}
-					});
-
-				}
-
-			};
-			thread.start();
-		}
-		callback.invoke();
+		getBluetoothAdapter().startLeScan(mScanCallbackInternal);
 	}
+
+	private BluetoothAdapter.LeScanCallback mScanCallbackInternal = new BluetoothAdapter.LeScanCallback() {
+		@Override
+		public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecordBytes) {
+			onDeviceScanned(device, rssi, scanRecordBytes);
+		}
+	};
 }
