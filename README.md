@@ -1,9 +1,15 @@
 # react-native-ble-manager
+<!--
 [![npm version](https://img.shields.io/npm/v/react-native-ble-manager.svg?style=flat)](https://www.npmjs.com/package/react-native-ble-manager)
 [![npm downloads](https://img.shields.io/npm/dm/react-native-ble-manager.svg?style=flat)](https://www.npmjs.com/package/react-native-ble-manager)
 [![GitHub issues](https://img.shields.io/github/issues/innoveit/react-native-ble-manager.svg?style=flat)](https://github.com/innoveit/react-native-ble-manager/issues)
+-->
 
-This is a porting of https://github.com/don/cordova-plugin-ble-central project to React Native.
+This is a fork of https://github.com/innoveit/react-native-ble-manager, which is itself a porting of https://github.com/don/cordova-plugin-ble-central project to React Native.  
+This fork adds the following:
+  1. Background scanning (in Android via `Service.startForeground(...)`, in iOS via TBD)
+  2. [WIP] Indefinite interval scanning (ex: 2 seconds on, 2 seconds off, repeat)
+  3. [WIP] Scanned device timeout
 
 ## Requirements
 RN 0.40+
