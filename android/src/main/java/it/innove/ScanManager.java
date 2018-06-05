@@ -3,6 +3,9 @@ package it.innove;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -10,12 +13,15 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.UiThreadUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public abstract class ScanManager {
+
+	private static final String TAG = "ScanManager";
 
 	protected BluetoothAdapter bluetoothAdapter;
 	protected Context context;
@@ -77,7 +83,7 @@ public abstract class ScanManager {
 					} catch (InterruptedException ignored) {
 					}
 
-					runOnUiThread(new Runnable() {
+					UiThreadUtil.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							// check current scan session was not stopped
@@ -94,12 +100,45 @@ public abstract class ScanManager {
 
 	protected abstract void scanInternal(ReadableArray serviceUUIDs, ReadableMap options);
 
+	public static boolean VERBOSE_LOG = BuildConfig.DEBUG;
+	public static final Set<String> DEBUG_DEVICE_ADDRESS_FILTER;
+	public static boolean DEBUG_LOG_IGNORED_DEVICE;
+
+	static {
+		DEBUG_DEVICE_ADDRESS_FILTER = initializeDebugBluetoothDeviceAddressFilterForDevelopmentMobileDevices();
+		DEBUG_LOG_IGNORED_DEVICE = BuildConfig.DEBUG && DEBUG_DEVICE_ADDRESS_FILTER.size() > 0;
+	}
+
+	@NonNull
+	private static Set<String> initializeDebugBluetoothDeviceAddressFilterForDevelopmentMobileDevices() {
+		final Set<String> DEBUG_DEVICE_ADDRESS_FILTER = new LinkedHashSet<>();
+		if (BuildConfig.DEBUG) {
+			//
+			// NOTE:(pv) Add here any BluetoothDevice.getAddress() values that you want to exclusively work with.
+			//  All other mac addresses will be ignored, WITHOUT EVEN ANY LOGGING!
+			//
+			DEBUG_DEVICE_ADDRESS_FILTER.add("0E:0A:A0:02:05:B0"); // pv's Honey 2018.05
+		}
+		return DEBUG_DEVICE_ADDRESS_FILTER;
+	}
+
 	protected void onDeviceScanned(final BluetoothDevice device, final int rssi, final byte[] scanRecordBytes) {
 		final String address = device.getAddress();
-		runOnUiThread(new Runnable() {
+		if (DEBUG_DEVICE_ADDRESS_FILTER.size() > 0 && !DEBUG_DEVICE_ADDRESS_FILTER.contains(address)) {
+			if (DEBUG_LOG_IGNORED_DEVICE) {
+				Log.w(TAG, "onDeviceScanned: " + address + " not in DEBUG_DEVICE_ADDRESS_FILTER; ignoring");
+			}
+			return;
+		}
+
+		if (VERBOSE_LOG) {
+			Log.v(TAG, "onDeviceScanned(" + device + ", rssi=" + rssi + ", scanRecordBytes=" + scanRecordBytes + ')');
+		}
+
+		UiThreadUtil.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				//Log.i(LOG_TAG, "DiscoverPeripheral: " + device.getName());
+				//Log.i(TAG, "onDeviceScanned: " + device.getName());
 				Peripheral peripheral;
 				if (!bleManager.peripherals.containsKey(address)) {
 					peripheral = new Peripheral(device, rssi, scanRecordBytes, reactContext);

@@ -1,6 +1,8 @@
 'use strict';
-var React = require('react-native');
-var bleManager = React.NativeModules.BleManager;
+const React = require('react-native');
+import TimeoutManager from './TimeoutManager';
+const bleManager = React.NativeModules.BleManager;
+const bleManagerEmitter = new React.NativeEventEmitter(bleManager);
 
 class BleManager  {
 
@@ -15,6 +17,15 @@ class BleManager  {
     this.SCAN_MODE_LOW_LATENCY = bleManager.SCAN_MODE_LOW_LATENCY;
     this.SCAN_MODE_LOW_POWER = bleManager.SCAN_MODE_LOW_POWER;
     this.SCAN_MODE_OPPORTUNISTIC = bleManager.SCAN_MODE_OPPORTUNISTIC;
+
+    this.timeoutManager = new TimeoutManager({timeout: 5.5 * 60 * 1000});
+    this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(this);
+    this.onPeripheralTimeout = this.onPeripheralTimeout.bind(this);
+    this.handlerDiscover = bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
+  }
+
+  componentWillUnmount() {
+    this.handlerDiscover.remove();
   }
 
   read(peripheralId, serviceUUID, characteristicUUID) {
@@ -219,6 +230,16 @@ class BleManager  {
         }
       });
     });
+  }
+
+  handleDiscoverPeripheral(peripheral) {
+    // console.log('BleManager handleDiscoverPeripheral', peripheral);
+    this.timeoutManager.add(peripheral, this.onPeripheralTimeout);
+  }
+
+  onPeripheralTimeout(peripheral, timeout) {
+    // console.log('BleManager onPeripheralTimeout peripheral', peripheral, 'timeout', timeout);
+    bleManagerEmitter.emit('BleManagerRemovePeripheral', { peripheral, timeout });
   }
 
   enableBluetooth() {

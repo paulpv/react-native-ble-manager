@@ -35,6 +35,7 @@ export default class App extends Component {
     }
 
     this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(this);
+    this.handleRemovePeripheral = this.handleRemovePeripheral.bind(this);
     this.handleStopScan = this.handleStopScan.bind(this);
     this.handleUpdateValueForCharacteristic = this.handleUpdateValueForCharacteristic.bind(this);
     this.handleDisconnectedPeripheral = this.handleDisconnectedPeripheral.bind(this);
@@ -47,6 +48,7 @@ export default class App extends Component {
     BleManager.start({showAlert: false});
 
     this.handlerDiscover = bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
+    this.handlerRemove = bleManagerEmitter.addListener('BleManagerRemovePeripheral', this.handleRemovePeripheral);
     this.handlerStop = bleManagerEmitter.addListener('BleManagerStopScan', this.handleStopScan);
     this.handlerDisconnect = bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral);
     this.handlerUpdate = bleManagerEmitter.addListener('BleManagerDidUpdateValueForCharacteristic', this.handleUpdateValueForCharacteristic);
@@ -81,7 +83,9 @@ export default class App extends Component {
   }
 
   componentWillUnmount() {
+    BleManager.componentWillUnmount();
     this.handlerDiscover.remove();
+    this.handlerRemove.remove();
     this.handlerStop.remove();
     this.handlerDisconnect.remove();
     this.handlerUpdate.remove();
@@ -130,7 +134,7 @@ export default class App extends Component {
     }
   }
 
-  retrieveConnected(){
+  retrieveConnected() {
     BleManager.getConnectedPeripherals([])
       .then((results) => {
         console.log(results);
@@ -144,13 +148,18 @@ export default class App extends Component {
       });
   }
 
-  handleDiscoverPeripheral(peripheral){
+  handleDiscoverPeripheral(peripheral) {
     var peripherals = this.state.peripherals;
-    if (!peripherals.has(peripheral.id)){
-      console.log('Got ble peripheral', peripheral);
+    if (!peripherals.has(peripheral.id)) {
+      console.log('Got BLE peripheral', peripheral);
       peripherals.set(peripheral.id, peripheral);
       this.setState({ peripherals })
     }
+  }
+
+  handleRemovePeripheral({ peripheral, timeout }) {
+    console.log('Lost BLE peripheral', peripheral, timeout);
+    this.state.peripherals.delete(peripheral.id);
   }
 
   test(peripheral) {
