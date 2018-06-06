@@ -70,6 +70,8 @@ public abstract class ScanManager {
 
 		scanInternal(serviceUUIDs, options);
 
+		// TODO:(pv) Scan on for X seconds, scan off for Y seconds, repeat...
+
 		if (scanSeconds > 0) {
 			new Thread() {
 
