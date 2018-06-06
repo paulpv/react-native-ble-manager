@@ -9,7 +9,7 @@ This is a fork of https://github.com/innoveit/react-native-ble-manager, which is
 This fork adds the following:
   1. Background scanning (in Android via `Service.startForeground(...)`, in iOS via TBD)
   2. [WIP] Indefinite interval scanning (ex: 2 seconds on, 2 seconds off, repeat)
-  3. [WIP] Scanned device timeout
+  3. Scanned device timeout (defaults to 60 seconds)
 
 ## Requirements
 RN 0.40+
